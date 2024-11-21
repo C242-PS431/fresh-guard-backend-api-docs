@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scan API Preview</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #swagger-ui {
+      width: 100%;
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="swagger-ui"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.min.js"></script>
+  <script>
+    let spec = {
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Scan Fruits and Vegetables API",
+    "description": "API for scan Fruits and Vegetables to assess freshness and rotteness",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://{domain}",
+      "description": "Fresh Guard API Server",
+      "variables": {
+        "domain": {
+          "default": "localhost",
+          "enum": [
+            "localhost",
+            "prod",
+            "not-ready-yet"
+          ]
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/api/v1/scans/freshness": {
+      "post": {
+        "summary": "Scanning produce freshness",
+        "description": "Endpoint for uploading image and get freshness result",
+        "parameters": [
+          {
+            "required": true,
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "dummy": {
+                "value": "Bearer _your_login_token_"
+              },
+              "real": {
+                "value": "Bearer 1|HVMFX6wESqVQPoZ25up0zYhdTDQDf7WHKiPDorWk4239d639"
+              }
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Image of fruit/vegetable for scanning"
+                  }
+                },
+                "required": [
+                  "image"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Image scann success",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "apple": {
+                    "value": {
+                      "status": "success",
+                      "message": "Berhasil scan tingkat kesegaran buah",
+                      "data": {
+                        "scan_result": {
+                          "id": "857632304780",
+                          "freshness_score": "0.3",
+                          "created_at": "2024-11-21T12:38:36.762654Z",
+                          "produce": "Apple",
+                          "scanned_at": "2024-11-21T12:38:36.762654Z"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "no image sended": {
+                    "value": {
+                      "status": "fail",
+                      "message": "The image field is required.",
+                      "errors": {
+                        "image": [
+                          "The image field is required."
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+    SwaggerUIBundle({
+      spec,
+      dom_id: '#swagger-ui'
+    });
+  </script>
+</body>
+
+</html>
