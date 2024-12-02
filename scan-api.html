@@ -27,159 +27,53 @@
     let spec = {
       "openapi": "3.0.3",
       "info": {
-        "title": "Scan API",
-        "description": "API for Authentication",
+        "title": "Scan Fruits and Vegetables API",
+        "description": "API for scan Fruits and Vegetables to assess freshness and rotteness",
         "version": "1.0.0"
       },
       "servers": [
         {
-          "url": "https://{domain}",
+          "url": "{protocol}://{domain}",
           "description": "Fresh Guard API Server",
           "variables": {
+            "protocol": {
+              "default": "http",
+              "enum": ["http", "https"]
+            },
             "domain": {
-              "default": "localhost",
+              "default": "35.219.27.170",
               "enum": [
                 "localhost",
                 "prod",
-                "not-ready-yet"
+                "not-ready-yet",
+                "35.219.27.170"
               ]
             }
           }
         }
       ],
       "paths": {
-        "/api/auth/register": {
+        "/api/v1/scans/freshness": {
           "post": {
-            "summary": "Register new acount",
-            "description": "Register new acount user",
+            "summary": "Scanning produce freshness",
+            "description": "Endpoint for uploading image and get freshness result",
             "parameters": [
               {
-                "$ref": "#/components/parameters/Accept"
-              }
-            ],
-            "requestBody": {
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string",
-                        "minLength": 4,
-                        "maxLength": 100
-                      },
-                      "username": {
-                        "type": "string",
-                        "minLength": 4,
-                        "maxLength": 100,
-                        "pattern": "[a-z0-9_]",
-                        "description": "username hanya boleh huruf, angka dan underscore. Kalau username yang dikirimkan terdapat huruf besar akan otomatis dikonversi menjadi huruf kecil oleh backend"
-                      },
-                      "password": {
-                        "type": "string"
-                      },
-                      "device_name": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "name",
-                      "username",
-                      "password"
-                    ]
+                "required": true,
+                "name": "Authorization",
+                "in": "header",
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "dummy": {
+                    "value": "Bearer _your_login_token_"
                   },
-                  "examples": {
-                    "ucup": {
-                      "value": {
-                        "name": "Ucup Membahana",
-                        "username": "ucup_surucup",
-                        "password": "ucup123",
-                        "device_name": "Desktop-5151"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "responses": {
-              "201": {
-                "description": "Register new acount success",
-                "content": {
-                  "application/json": {
-                    "examples": {
-                      "ucup": {
-                        "value": {
-                          "status": "success",
-                          "message": "Registrasi Sukses",
-                          "data": {
-                            "user": {
-                              "id": "174041042380",
-                              "name": "Ucup Membahana",
-                              "username": "ucup_surucup",
-                              "created_at": "2024-11-21T08:35:16.000000Z"
-                            },
-                            "token": "1|qAy59uM7DO8bwZtmszVoxgpCcJ8GFKjfmePFww0l6afbb8dd",
-                            "token_expires_at": null
-                          }
-                        }
-                      }
-                    }
+                  "real": {
+                    "value": "Bearer 1|HVMFX6wESqVQPoZ25up0zYhdTDQDf7WHKiPDorWk4239d639"
                   }
                 }
               },
-              "400": {
-                "description": "Register fail, invalid data sended",
-                "content": {
-                  "application/json": {
-                    "examples": {
-                      "ucup": {
-                        "value": {
-                          "status": "failed",
-                          "data": null,
-                          "message": "The username field must not be greater than 100 characters.",
-                          "errors": {
-                            "username": [
-                              "The username field must not be greater than 100 characters.",
-                              "The username field format is invalid."
-                            ]
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "401": {
-                "description": "Username already taken",
-                "content": {
-                  "application/json": {
-                    "examples": {
-                      "ucup": {
-                        "value": {
-                          "status": "fail",
-                          "message": "The username has already been taken.",
-                          "errors": {
-                            "username": [
-                              "The username has already been taken."
-                            ],
-                            "password": [
-                              "Passsword too lenght."
-                            ]
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "/api/auth/login": {
-          "post": {
-            "summary": "Login",
-            "description": "API for Login and get Authentication Token",
-            "parameters": [
               {
                 "$ref": "#/components/parameters/Accept"
               }
@@ -187,52 +81,41 @@
             "requestBody": {
               "required": true,
               "content": {
-                "application/json": {
+                "multipart/form-data": {
                   "schema": {
                     "type": "object",
                     "properties": {
-                      "username": {
-                        "type": "string"
-                      },
-                      "password": {
-                        "type": "string"
+                      "image": {
+                        "type": "string",
+                        "format": "binary",
+                        "description": "Image of fruit/vegetable for scanning"
                       }
                     },
                     "required": [
-                      "username",
-                      "password"
+                      "image"
                     ]
-                  },
-                  "examples": {
-                    "ucup": {
-                      "value": {
-                        "username": "ucup_surucup",
-                        "password": "password123"
-                      }
-                    }
                   }
                 }
               }
             },
             "responses": {
-              "201": {
-                "description": "Login success",
+              "200": {
+                "description": "Image scann success",
                 "content": {
                   "application/json": {
                     "examples": {
-                      "ucup": {
+                      "apple": {
                         "value": {
                           "status": "success",
-                          "message": "Login Sukses",
+                          "message": "Berhasil scan tingkat kesegaran buah",
                           "data": {
-                            "user": {
-                              "id": "174041042380",
-                              "name": "Ucup Membahana",
-                              "username": "ucup_surucup",
-                              "created_at": "2024-11-21T08:35:16.000000Z"
-                            },
-                            "token": "3|ho3sYWBHJUGCMutmXpHtRjVCSZ8MFc3Yvct4EKrD1278a3e2",
-                            "token_expires_at": null
+                            "scan_result": {
+                              "id": "857632304780",
+                              "freshness_score": "0.3",
+                              "created_at": "2024-11-21T12:38:36.762654Z",
+                              "produce": "Apple",
+                              "scanned_at": "2024-11-21T12:38:36.762654Z"
+                            }
                           }
                         }
                       }
@@ -241,14 +124,19 @@
                 }
               },
               "400": {
-                "description": "Password or username wrong",
+                "description": "Image is invalid or no send image",
                 "content": {
                   "application/json": {
                     "examples": {
-                      "ucup": {
+                      "no image sended": {
                         "value": {
                           "status": "fail",
-                          "message": "Username atau Password salah."
+                          "message": "The image field is required.",
+                          "errors": {
+                            "image": [
+                              "The image field is required."
+                            ]
+                          }
                         }
                       }
                     }
@@ -258,9 +146,71 @@
             }
           }
         },
-        "/api/auth/logout": {
-          "summary": "Logout",
+        "/api/v1/scans/{scanId}/track": {
+          "summary": "Track scan or mark consumed fruit or vegetable",
           "post": {
+            "parameters": [
+              {
+                "required": true,
+                "in": "path",
+                "schema": {
+                  "type": "string"
+                },
+                "name": "scanId",
+                "description": "Unique ID of scan result"
+              },
+              {
+                "required": true,
+                "in": "header",
+                "name": "Authorization",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Bearer _user_login_token_"
+              },
+              {
+                "$ref": "#/components/parameters/Accept"
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Track scan or mark fruit/vegetable as consumed is success",
+                "content": {
+                  "application/json": {
+                    "example": {
+                      "status": "success",
+                      "message": "Sukses track hasil scan."
+                    }
+                  }
+                }
+              },
+              "404": {
+                "description": "When the ID scan not exist",
+                "content": {
+                  "application/json": {
+                    "example": {
+                      "status": "fail",
+                      "message": "ID scan tidak ditemukan."
+                    }
+                  }
+                }
+              },
+              "401": {
+                "description": "unlogged user",
+                "content": {
+                  "application/json": {
+                    "example": {
+                      "message": "unauthenticated"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/v1/scans": {
+          "get": {
+            "summary": "Get history data scan",
             "parameters": [
               {
                 "required": true,
@@ -269,12 +219,57 @@
                 "schema": {
                   "type": "string"
                 },
+                "example": "Bearer _user_login_token_"
+              },
+              {
+                "in": "query",
+                "name": "page",
+                "schema": {
+                  "type": "integer",
+                  "default": 1
+                },
+                "example": 1
+              },
+              {
+                "in": "query",
+                "name": "per_page",
+                "description": "Determine how many data get",
+                "schema": {
+                  "type": "integer",
+                  "default": 5
+                },
+                "example": 5
+              },
+              {
+                "in": "query",
+                "name": "date",
+                "schema": {
+                  "type": "string",
+                  "format": "date",
+                  "default": null
+                },
                 "examples": {
-                  "contoh-gambaran": {
-                    "value": "Bearer _your_login_token_"
+                  "today": {
+                    "value": "today"
                   },
-                  "real": {
-                    "value": "Bearer 4|WR9KtHt4fIdYwU5EL7bwYzOj189NeVu6FJp2KKjHb1438660"
+                  "tanggal": {
+                    "value": "20-11-2024"
+                  }
+                }
+              },
+              {
+                "in": "query",
+                "name": "get_tracked",
+                "schema": {
+                  "type": "string",
+                  "default": false
+                },
+                "examples": {
+                  "boolean": {
+                    "value": true
+                  },
+                  "number": {
+                    "value": 1
                   }
                 }
               },
@@ -284,14 +279,90 @@
             ],
             "responses": {
               "200": {
-                "description": "Success Logout",
+                "description": "Success get data scans",
                 "content": {
                   "application/json": {
                     "examples": {
-                      "ucup": {
+                      "/api/v1/scans?date=today&per_page=2": {
                         "value": {
-                          "status": "succes",
-                          "message": "Logout berhasil"
+                          "total": 2,
+                          "data": [
+                            {
+                              "id": "205558441489",
+                              "produce": {
+                                "id": "446215456398",
+                                "name": "apple",
+                                "calories": 95000,
+                                "protein": 500,
+                                "carbohydrates": 25000,
+                                "fiber": 4400
+                              },
+                              "is_tracked": false,
+                              "freshness_score": "0.70",
+                              "created_at": "2024-11-21 17:11:22"
+                            },
+                            {
+                              "id": "226757147545",
+                              "produce": {
+                                "id": "446215456398",
+                                "name": "apple",
+                                "calories": 95000,
+                                "protein": 500,
+                                "carbohydrates": 25000,
+                                "fiber": 4400
+                              },
+                              "is_tracked": false,
+                              "freshness_score": "0.70",
+                              "created_at": "2024-11-21 17:12:06"
+                            }
+                          ],
+                          "links": {
+                            "first": "http://localhost:8000/api/v1/scans?page=1",
+                            "last": "http://localhost:8000/api/v1/scans?page=4",
+                            "prev": null,
+                            "next": "http://localhost:8000/api/v1/scans?page=2"
+                          },
+                          "meta": {
+                            "current_page": 1,
+                            "from": 1,
+                            "last_page": 4,
+                            "links": [
+                              {
+                                "url": null,
+                                "label": "&laquo; Previous",
+                                "active": false
+                              },
+                              {
+                                "url": "http://localhost:8000/api/v1/scans?page=1",
+                                "label": "1",
+                                "active": true
+                              },
+                              {
+                                "url": "http://localhost:8000/api/v1/scans?page=2",
+                                "label": "2",
+                                "active": false
+                              },
+                              {
+                                "url": "http://localhost:8000/api/v1/scans?page=3",
+                                "label": "3",
+                                "active": false
+                              },
+                              {
+                                "url": "http://localhost:8000/api/v1/scans?page=4",
+                                "label": "4",
+                                "active": false
+                              },
+                              {
+                                "url": "http://localhost:8000/api/v1/scans?page=2",
+                                "label": "Next &raquo;",
+                                "active": false
+                              }
+                            ],
+                            "path": "http://localhost:8000/api/v1/scans",
+                            "per_page": 2,
+                            "to": 2,
+                            "total": 7
+                          }
                         }
                       }
                     }
@@ -299,15 +370,11 @@
                 }
               },
               "401": {
-                "description": "When unloggen user trying to logout",
+                "description": "Unlogged user trying to get data",
                 "content": {
                   "application/json": {
-                    "examples": {
-                      "ucup": {
-                        "value": {
-                          "message": "unauthenticated"
-                        }
-                      }
+                    "example": {
+                      "message": "unauthenticated"
                     }
                   }
                 }
